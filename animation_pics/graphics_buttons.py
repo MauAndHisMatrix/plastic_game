@@ -12,6 +12,8 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 FPS = 60
 
+HARVESTERS = "seabin trash_wheel waste_shark litter_boon ho_wrack litter_picker".split()
+
 class Button:
     def __init__(self, x, y, width, height, color, text, action=None):
         self.rect = pygame.Rect(x, y, width, height)
@@ -31,7 +33,10 @@ class Button:
 
     def perform_action(self):
         if self.action is not None:
-            self.action()
+            if isinstance(self.action, tuple):
+                self.action[0](self.action[1])
+            else:
+                self.action()
 
 
 class Harvester:
@@ -44,10 +49,26 @@ class Harvester:
 
 
 class HarvesterMenu:
-    def __init__(self):
+    def __init__(self, beach_map_state):
+        self.beach_map_state = beach_map_state
         self.value1 = 0
         self.value2 = 0
         self.value3 = 0
+        self.buttons = [
+            Button(50, 50, BUTTON_WIDTH, BUTTON_HEIGHT, WHITE, "Harvester Menu", self.open_harvester_menu),
+            Button(50, 110, BUTTON_WIDTH, BUTTON_HEIGHT, WHITE, "Main Menu", self.open_main_menu),
+            Button(50, 170, BUTTON_WIDTH, BUTTON_HEIGHT, WHITE, "Quiz", self.open_quiz)
+        ]
+        self.buttons = [Button(50, 50 + BUTTON_HEIGHT * (i+1), BUTTON_WIDTH, BUTTON_HEIGHT, harv.name, (self.check_balance, harv.price))
+                        for i, harv in enumerate(self.beach_map_state.harvesters)]
+
+
+    def check_balance(self, price):
+        if self.beach_map_state.bank - price < 0:
+            pass
+        else:
+            self.beach_map_state.bank -= price
+
 
     def handle_events(self, events):
         for event in events:
@@ -101,20 +122,29 @@ class Quiz:
 
 
 class BeachMap:
-    def __init__(self, screen):
+    def __init__(self,
+                 screen,
+                 current_plastic_level,
+                 bank):
         self.background_image = pygame.image.load("beach_background.png")
         self.background_image = self.resize_image(self.background_image, (WINDOW_WIDTH, WINDOW_HEIGHT))
         self.harvesters = [
             Harvester("litterboon_narrow.png", 100, 200),
             Harvester("litterboon_wide.png", 300, 400)
         ]
-
         self.buttons = [
             Button(50, 50, BUTTON_WIDTH, BUTTON_HEIGHT, WHITE, "Harvester Menu", self.open_harvester_menu),
             Button(50, 110, BUTTON_WIDTH, BUTTON_HEIGHT, WHITE, "Main Menu", self.open_main_menu),
             Button(50, 170, BUTTON_WIDTH, BUTTON_HEIGHT, WHITE, "Quiz", self.open_quiz)
         ]
         self.screen = screen
+
+        self.plastic_level = current_plastic_level
+        self.bank = bank
+        self.harvesters = [Harvester(harv) for harv in HARVESTERS]
+        self.turn_counter = 1
+
+
 
     def resize_image(self, image, size):
         aspect_ratio = image.get_width() / image.get_height()
@@ -126,7 +156,7 @@ class BeachMap:
         return pygame.transform.scale(image, (new_width, new_height))
 
     def open_harvester_menu(self):
-        harvester_menu = HarvesterMenu()
+        harvester_menu = HarvesterMenu(self)
         self.run_sub_menu(harvester_menu)
 
     def open_main_menu(self):
