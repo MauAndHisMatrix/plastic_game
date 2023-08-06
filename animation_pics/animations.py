@@ -13,7 +13,7 @@ import time
 pygame.init()
 
 # Constants
-WINDOW_WIDTH, WINDOW_HEIGHT = 800, 600
+WINDOW_WIDTH, WINDOW_HEIGHT = 800, 533
 BUTTON_WIDTH, BUTTON_HEIGHT = 200, 50
 BUTTON_SPACING = 20
 WHITE = (255, 255, 255)
@@ -21,17 +21,19 @@ BLACK = (0, 0, 0)
 FPS = 60
 
 class Harvester:
-    def __init__(self, images, recovery_rate, price, location, name):
+    def __init__(self, images, recovery_rate, price, location, name, size, speed):
         self.images = [pygame.image.load(image_path) for image_path in images]
         self.rect = self.images[0].get_rect()
         self.rect.x = location[0]
         self.rect.y = location[1]
         self.recovery_rate = recovery_rate
         self.price = price
+        self.size = size
         self.amount = 1
         self.current_image_index = 0
         self.animation_interval = 0.25  # 0.25 seconds
         self.last_image_update_time = time.time()
+        self.speed = speed
 
     def animate(self):
         current_time = time.time()
@@ -43,26 +45,39 @@ class Harvester:
     def image(self):
         return self.images[self.current_image_index]
     
+    def mover(self):
+       # Implement the mover method to move the harvester up and down the screen
+        self.rect.y += self.speed  # Adjust the speed of movement as per your requirements
+        if self.rect.y > WINDOW_HEIGHT:
+            self.rect.y = -self.rect.height
+    
 class BeachMap:
     def __init__(self, screen):
         self.background_image = pygame.image.load("beach_background.png")
         self.background_image = self.resize_image(self.background_image, (WINDOW_WIDTH, WINDOW_HEIGHT))
         self.harvesters = [
-            Harvester(["seabin.png"], 100, 10000, [30, 30], "seabin"),
-            Harvester(["WasteShark.png"], 100, 10000, [80, 30], "waste_shark"),
+            Harvester(["seabin_big.png", "seabin_middle.png", "seabin_small.png",
+                       "seabin_middle.png"], 100, 10000, (int(0.15*WINDOW_WIDTH), 
+                    int(0.3*WINDOW_HEIGHT)), "seabin", (int(0.11*WINDOW_WIDTH),int(0.11*WINDOW_WIDTH)), 0),
+            Harvester(["WasteShark.png"], 100, 10000, (int(0.0125*WINDOW_WIDTH), 0), "waste_shark",
+                      (int(0.11*WINDOW_WIDTH),int(0.225*WINDOW_WIDTH)), 2.5),
             Harvester(["trashwheel_1.png", "trashwheel_2.png", 
                           "trashwheel_3.png", "trashwheel_4.png"], 
-                      100, 10000, [130,30], "trash_wheel"),
+                      100, 10000, (int(0.27*WINDOW_WIDTH),0), "trash_wheel", 
+                      (int(0.15*WINDOW_WIDTH), int(0.3*WINDOW_WIDTH)), 1.5),
             Harvester(["HO_wrack_1.png", "HO_wrack_2.png",
-                       "HO_wrack_3.png", "HO_wrack_1.png"], 
-                      100, 10000, [300,200], "ho_wrack"),
-            Harvester(["litter_picker_1.png", "litter_picker_2.png",
-                       "litter_picker_3.png", "litter_picker_2.png"], 
-                      100, 10000, [300,150], "litter_picker"),
-            Harvester(["litterboon_wide.png", "litterboon_middle.png",
-                       "litterboon_narrow.png", "litterboon_middle.png"], 
-                      100, 10000, [50,50], "litter_boon")
-            ]
+                       "HO_wrack_3.png", "HO_wrack_2.png"], 
+                      100, 10000, (int(0.81*WINDOW_WIDTH),int(0.375*WINDOW_HEIGHT)),
+                      "ho_wrack", (int(0.19*WINDOW_WIDTH),int(0.28*WINDOW_WIDTH)), 2),
+            Harvester(["litter_pickers_1.png", "litter_pickers_2.png",
+                       "litter_pickers_3.png", "litter_pickers_2.png"], 
+                      100, 10000, (int(0.71*WINDOW_WIDTH),int(0.028*WINDOW_HEIGHT)),
+                      "litter_picker", (int(0.125*WINDOW_WIDTH), int(0.15*WINDOW_WIDTH)), 1),
+            Harvester(["litterboon_wide_.png", "litterboon_middle_.png",
+                       "litterboon_narrow_.png", "litterboon_middle_.png"], 
+                      100, 10000, (int(0.425*WINDOW_WIDTH),0), "litter_boon",
+                      (int(0.22*WINDOW_WIDTH), WINDOW_WIDTH), 0)]
+            
         self.screen = screen
 
 
@@ -82,6 +97,9 @@ class BeachMap:
                 pygame.quit()
                 sys.exit()
 
+    def move_harvesters(self):
+        for harvester in self.harvesters:
+            harvester.mover()
 
     def draw(self):
         surface = self.screen
@@ -90,7 +108,8 @@ class BeachMap:
 
         #Draw the harvesters on top of the background
         for harvester in self.harvesters:
-            surface.blit(harvester.image, harvester.rect)
+            resized_image = self.resize_image(harvester.image, harvester.size)  # Adjust the size as per your requirements
+            surface.blit(resized_image, harvester.rect)
 
             
 def main():
@@ -108,6 +127,7 @@ def main():
         for harvester in beach_map.harvesters:
             harvester.animate()  # Call the animate method to update
 
+        beach_map.move_harvesters()
         beach_map.draw()
 
         pygame.display.flip()
