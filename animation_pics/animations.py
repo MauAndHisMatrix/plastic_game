@@ -73,8 +73,8 @@ class BeachMap:
                        "litter_pickers_3.png", "litter_pickers_2.png"], 
                       100, 10000, (int(0.71*WINDOW_WIDTH),int(0.028*WINDOW_HEIGHT)),
                       "litter_picker", (int(0.125*WINDOW_WIDTH), int(0.15*WINDOW_WIDTH)), 1),
-            Harvester(["litterboon_wide_.png", "litterboon_middle_.png",
-                       "litterboon_narrow_.png", "litterboon_middle_.png"], 
+            Harvester(["litterboon_wide.png", "litterboon_middle.png",
+                       "litterboon_narrow.png", "litterboon_middle.png"], 
                       100, 10000, (int(0.425*WINDOW_WIDTH),0), "litter_boon",
                       (int(0.22*WINDOW_WIDTH), WINDOW_WIDTH), 0)]
             
