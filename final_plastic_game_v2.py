@@ -982,7 +982,10 @@ class BeachMap:
             self.bank += self.total_recovery_rate * self.exchange_rate
             self.multiplier = 1.
             self.quiz_completed = False
-            self.date = self.date.replace(month=self.date.month + 1)
+            if self.date.month == 12:  # If it's December, increment the year and set month to January
+                self.date = self.date.replace(year=self.date.year + 1, month=1)
+            else:
+                self.date = self.date.replace(month=self.date.month + 1)
         else:
             self.display_quiz_unopened = True
 
